@@ -1,0 +1,19 @@
+.fundo {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.perfil {
+    width: 300px;
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+.perfil img {
+    width: 150px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}

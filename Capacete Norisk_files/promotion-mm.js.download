@@ -1,0 +1,230 @@
+$(function () {
+    var url = window.location.href;
+    var searchString = "testePrice";
+
+    var categExcluir = ["658", "616", "590", "660", "639", "597", "618", "605", "661"];
+    var colecaoExcluir = ["138"]
+    var flagFreteGratis = '<span class="flag-frete-gratis">Frete Grátis</span>';
+
+    //if (window.location.href.indexOf(searchString) !== -1) {
+    // Shelf
+    setTimeout(function () {
+        $(".shelf ul li .data").each(function () {
+            var _this = $(".shelf ul li");
+            var idSku = _this?.find(".data").attr("data-id");
+
+            if(idSku) {
+                fetch('/api/catalog_system/pub/products/search/?fq=productId:' + idSku, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if(data?.length > 0) {
+                            console.log('produto', data)
+                            // Array para armazenar os IDs das categorias do produto
+                            var idsCate = [];
+
+                            // Array para armazenar os IDs das colecoes do produto
+                            var idsColection = [];
+
+                            // Iterar sobre o array de dados categoria
+                            $.each(data[0]?.categoriesIds, function (index, value) {
+                                // Use uma expressão regular para extrair os números dos caminhos
+                                var numeros = value?.match(/\d+/g);
+
+                                // Verifique se há números
+                                if (numeros !== null) {
+                                    // Adicione os números extraídos ao array de IDs
+                                    idsCate = idsCate.concat(numeros);
+                                }
+                            });
+
+                            // Iterar sobre o array de dados colecao
+                            $.each(data[0]?.productClusters, function (chave, valor) {
+                                // Adicionar a chave ao array
+                                idsColection.push(chave);
+                            });
+
+                            // Aqui acesso todas as promocoes para verificar quais estao ativas
+                            fetch('/api/rnb/pvt/benefits/calculatorconfiguration', {
+                                method: 'GET',
+                                headers: {
+                                    Accept: 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-VTEX-API-AppKey': 'vtexappkey-marquinhom-DEZPQJ',
+                                    'X-VTEX-API-AppToken': 'WQIKQJYEMHLCXSSWFEWTMVHIEXALERYIFKYNMSVIKUACHSROXTMRWFYJVCOLOULZDWGQGZKCAYFFYFUTBDJUFDMRUPFHPPIFPPYEUNIALDCCNESFWVTIYJZQMITFLSEP',
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                // Aqui verifico e retorno somente as promocoes ativas
+                                var resultados = data?.items.filter(item => item.isActive === true && item.status === "active").map(item => item); // Mapear os objetos filtrados
+                                
+                                if(resultados?.length > 0) {
+                                    resultados?.map(item => {
+                                        fetch("/api/rnb/pvt/calculatorconfiguration/" + item?.idCalculatorConfiguration, {
+                                            method: 'GET',
+                                            headers: {
+                                                Accept: 'application/json',
+                                                'Content-Type': 'application/json',
+                                                'X-VTEX-API-AppKey': 'vtexappkey-marquinhom-DEZPQJ',
+                                                'X-VTEX-API-AppToken': 'WQIKQJYEMHLCXSSWFEWTMVHIEXALERYIFKYNMSVIKUACHSROXTMRWFYJVCOLOULZDWGQGZKCAYFFYFUTBDJUFDMRUPFHPPIFPPYEUNIALDCCNESFWVTIYJZQMITFLSEP',
+                                            }
+                                        })
+                                        .then(response => response.json())
+                                        .then(response => {
+                                            // Esse if verifica se a promocao possui categoria e colecao
+                                            if(response?.categories.length > 0 && response?.collections.length > 0) {
+                                                // Aqui filtro pra saber se a promocao tem as categorias e promocoes que nao podem participar
+                                                console.log('idsCate do produto', idsCate)
+                                                console.log('idsColection do produto', idsColection)
+
+                                                const objetosFiltradosCateg = categExcluir.filter(id => response?.categories?.some(elemento => elemento.id === id));
+                                                const objetosFiltradosColection = colecaoExcluir.filter(id => response?.collections?.some(elemento => elemento.id === id));
+
+                                                console.log('objetosFiltradosCateg', objetosFiltradosCateg)
+                                                console.log('objetosFiltradosColection', objetosFiltradosColection)
+
+                                                // Aqui eu verifico com base no filter acima se algum deles existe no produto
+                                                const filterProductCateg = idsCate.filter(id => objetosFiltradosCateg.includes(id));
+                                                const filterProductColection = idsColection.filter(id => objetosFiltradosColection.includes(id));
+
+                                                console.log('filterProductCateg', filterProductCateg)
+                                                console.log('filterProductColection', filterProductColection)
+
+                                                if(filterProductCateg?.length > 0 || filterProductColection?.length > 0) {
+                                                    console.log('nao vai flag')
+                                                } else {
+                                                    console.log('vai flag')
+                                                    if(_this.find(".flag-frete-gratis").length === 0) {
+                                                        _this.find(".productImage").append(flagFreteGratis);
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    })
+                                }
+                            });
+
+                        }
+                    })
+                    .catch((err) => console.error(err))
+            }
+        });
+    }, 1000);
+
+    // PDP
+    /*setTimeout(function () {
+        $(".shelf ul li .data").each(function () {
+            var _this = $(".shelf ul li");
+            var idSku = skuJson?.productId;
+
+            if(idSku) {
+                fetch('/api/catalog_system/pub/products/search/?fq=productId:' + idSku, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if(data?.length > 0) {
+                            console.log('produto', data)
+                            // Array para armazenar os IDs das categorias do produto
+                            var idsCate = [];
+
+                            // Array para armazenar os IDs das colecoes do produto
+                            var idsColection = [];
+
+                            // Iterar sobre o array de dados categoria
+                            $.each(data[0]?.categoriesIds, function (index, value) {
+                                // Use uma expressão regular para extrair os números dos caminhos
+                                var numeros = value?.match(/\d+/g);
+
+                                // Verifique se há números
+                                if (numeros !== null) {
+                                    // Adicione os números extraídos ao array de IDs
+                                    idsCate = idsCate.concat(numeros);
+                                }
+                            });
+
+                            // Iterar sobre o array de dados colecao
+                            $.each(data[0]?.productClusters, function (chave, valor) {
+                                // Adicionar a chave ao array
+                                idsColection.push(chave);
+                            });
+
+                            // Aqui acesso todas as promocoes para verificar quais estao ativas
+                            fetch('/api/rnb/pvt/benefits/calculatorconfiguration', {
+                                method: 'GET',
+                                headers: {
+                                    Accept: 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-VTEX-API-AppKey': 'vtexappkey-marquinhom-DEZPQJ',
+                                    'X-VTEX-API-AppToken': 'WQIKQJYEMHLCXSSWFEWTMVHIEXALERYIFKYNMSVIKUACHSROXTMRWFYJVCOLOULZDWGQGZKCAYFFYFUTBDJUFDMRUPFHPPIFPPYEUNIALDCCNESFWVTIYJZQMITFLSEP',
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                // Aqui verifico e retorno somente as promocoes ativas
+                                var resultados = data?.items.filter(item => item.isActive === true && item.status === "active").map(item => item); // Mapear os objetos filtrados
+                                
+                                if(resultados?.length > 0) {
+                                    resultados?.map(item => {
+                                        fetch("/api/rnb/pvt/calculatorconfiguration/" + item?.idCalculatorConfiguration, {
+                                            method: 'GET',
+                                            headers: {
+                                                Accept: 'application/json',
+                                                'Content-Type': 'application/json',
+                                                'X-VTEX-API-AppKey': 'vtexappkey-marquinhom-DEZPQJ',
+                                                'X-VTEX-API-AppToken': 'WQIKQJYEMHLCXSSWFEWTMVHIEXALERYIFKYNMSVIKUACHSROXTMRWFYJVCOLOULZDWGQGZKCAYFFYFUTBDJUFDMRUPFHPPIFPPYEUNIALDCCNESFWVTIYJZQMITFLSEP',
+                                            }
+                                        })
+                                        .then(response => response.json())
+                                        .then(response => {
+                                            // Esse if verifica se a promocao possui categoria e colecao
+                                            if(response?.categories.length > 0 && response?.collections.length > 0) {
+                                                // Aqui filtro pra saber se a promocao tem as categorias e promocoes que nao podem participar
+                                                console.log('idsCate do produto', idsCate)
+                                                console.log('idsColection do produto', idsColection)
+
+                                                const objetosFiltradosCateg = categExcluir.filter(id => response?.categories?.some(elemento => elemento.id === id));
+                                                const objetosFiltradosColection = colecaoExcluir.filter(id => response?.collections?.some(elemento => elemento.id === id));
+
+                                                console.log('objetosFiltradosCateg', objetosFiltradosCateg)
+                                                console.log('objetosFiltradosColection', objetosFiltradosColection)
+
+                                                // Aqui eu verifico com base no filter acima se algum deles existe no produto
+                                                const filterProductCateg = idsCate.filter(id => objetosFiltradosCateg.includes(id));
+                                                const filterProductColection = idsColection.filter(id => objetosFiltradosColection.includes(id));
+
+                                                console.log('filterProductCateg', filterProductCateg)
+                                                console.log('filterProductColection', filterProductColection)
+
+                                                if(filterProductCateg?.length > 0 || filterProductColection?.length > 0) {
+                                                    console.log('nao vai flag')
+                                                } else {
+                                                    console.log('vai flag')
+                                                    if(_this.find(".flag-frete-gratis").length === 0) {
+                                                        _this.find(".productImage").append(flagFreteGratis);
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    })
+                                }
+                            });
+
+                        }
+                    })
+                    .catch((err) => console.error(err))
+            }
+        });
+    }, 1000);*/
+    //}
+});

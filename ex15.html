@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Página de Lançamento de Produto</title>
+
+</head>
+<body>
+<div class="fundo">
+  <h1>Lançamento do Novo Produto!</h1>
+  <div class="countdown">
+    Lançamento em: <time id="launch-time" datetime="2024-05-01">00:00:00</time>
+  </div>
+  <img src="vs01.jpg" alt="Produto" class="imagem-produto">
+  <div class="features">
+    <h2>Recursos Destacados:</h2>
+    <ul>
+      <li>Design moderno</li>
+      <li>Alta performance</li>
+      <li>Tecido de qualidade</li>
+    </ul>
+  </div>
+  <div class="pré ">
+    <h2>Reserve o Seu Agora!</h2>
+    <form action="#">
+      <input type="email" placeholder="Digite seu e-mail">
+      <input type="submit" value="Reservar">
+    </form>
+  </div>
+</div>
+
+<script>
+  const launchTime = new Date(document.getElementById('launch-time').getAttribute('datetime')).getTime();
+
+  const countdown = setInterval(() => {
+    const now = new Date().getTime();
+    const distance = launchTime - now;
+    
+    if (distance < 0) {
+      clearInterval(countdown);
+      document.getElementById('launch-time').innerText = "Lançado!";
+    } else {
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      
+      document.getElementById('launch-time').innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+  }, 1000);
+</script>
+<p class="paragrafo"> se quiser voltar para a <a href="ex14.html"> página anterior </a> </p>
+</body>
+</html>

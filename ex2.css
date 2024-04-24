@@ -1,0 +1,10 @@
+body{
+    background-image: url(160.jpg);
+}
+.profile {
+    text-align: center;
+  }
+
+  .profile img {
+    border-radius: 50%;
+  }
